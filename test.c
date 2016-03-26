@@ -1,7 +1,8 @@
 #include <stdio.h>
 
 int main(){
-    /* Testing.... */
+    /* int Testing.... */
+    int a_b;
     printf("@@@\n");
     return 0;
 }
