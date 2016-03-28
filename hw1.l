@@ -20,24 +20,41 @@ ID [a-zA-Z_][a-zA-Z0-9_]*
 %x NAME
 %x DECLARE
 %x INIT
+%x STATEMENT
+%x HEADER
 %s FUNC
+
 
 %%
 
+"#" BEGIN(HEADER);
+{str} printf("#%d string: %s\n", lineCount, yytext);
 if|for|while|else printf("branch: %s\n", yytext);
 {DIGIT}+ {printf("get digit: %s\n", yytext);}
+"//".+  {printf("#%d one line comment %s\n", lineCount, yytext);}
 "+"|"-"|"*"|"/" printf("An operator: %s\n", yytext );
 "/*" {
     print(out, lineCount, "Comment");
     BEGIN(COMMENT);
 }
 "int"|"double"|"char" {
-    printf("type: %s\n", yytext);
+    printf("#%d data type: %s\n", lineCount, yytext);
     BEGIN(DECLARE);
 }
-{ID} printf("get character: %s\n", yytext);
-\n  {lineCount++; printf("lineCnt: %d\n",lineCount);}
-[ \r\t\f\v] {}
+{ID} { 
+    strcpy(id, yytext);
+    id_line = lineCount;
+    printf("get character: %s\n", yytext);
+    BEGIN(STATEMENT);
+}
+\n  {lineCount++; printf("\n");} 
+{space} {}
+
+<HEADER>{
+    ">" BEGIN(0);
+    \"  BEGIN(0);
+    .   {}
+}
 
 <COMMENT>{
      "*/"      {BEGIN(INITIAL);}
@@ -49,7 +66,7 @@ if|for|while|else printf("branch: %s\n", yytext);
     
 }
 <DECLARE>{
-    {space}   printf("white space\n");     
+    {space} {} 
     {ID} {
         strcpy(id, yytext);
         id_line = lineCount;
@@ -78,6 +95,26 @@ if|for|while|else printf("branch: %s\n", yytext);
     {DIGIT}+ printf("#%d value: %s\n", lineCount ,yytext);
     {str}   printf("#%d string: %s\n", lineCount ,yytext);  
     ";" BEGIN(0);
+}
+<STATEMENT>{
+    {space} {}
+    "="{space} {
+        BEGIN(INIT);
+    }
+    \n   lineCount++;
+    ","  printf("#%d variable ID: %s\n", id_line, id);
+    ;    {
+        printf("#%d variable ID: %s\n", id_line, id);
+        BEGIN(INITIAL);
+    }
+    "("{space}")" {
+        printf("#%d function ID: %s\n", id_line, id);
+        BEGIN(0); 
+    }
+    "(" {
+        printf("#%d function ID: %s\n", id_line, id);
+        BEGIN(0); 
+    }
 }
 <FUNC>{
     ")"  {
