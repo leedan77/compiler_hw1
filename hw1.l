@@ -46,6 +46,9 @@ if|for|while|else printf("#%d branch: %s\n", lineCount, yytext);
     printf("#%d data type: %s\n", lineCount, yytext);
     declare_flag = 1;
 }
+return {
+    printf("#%d keyword: %s\n", lineCount, yytext);
+}
 {ID} { 
     strcpy(id, yytext);
     id_line = lineCount;
@@ -172,7 +175,7 @@ if|for|while|else printf("#%d branch: %s\n", lineCount, yytext);
 int main(void) { 
     out = fopen("token.txt", "w");
     yylex();
-    printf("line: %d\n", lineCount);
+    printf("total line: %d\n", lineCount);
     fclose(out);
     return 0;
 }
