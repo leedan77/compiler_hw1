@@ -13,8 +13,8 @@
 int main(void)
 {
     int n, w, x, y, z;
-    int num = 1000;
-
+    int num = -1000;
+    double a = 3.1415926;
     for (n = 0; n <= num; ++n)
     {
         w = n + 1;

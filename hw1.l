@@ -22,9 +22,11 @@
         fprintf(fp, "#%d %s\n", lineNum, type);
     }
 %}
-str \".*\"
-char \'.\'
-space [ \r\t\f\v]
+PLUS_MINUS "+"|"-"
+STR \".*\"
+CHAR \'.\'
+SPACE [ \r\t\f\v]
+FLOAT [0-9]+.[0-9]+
 DIGIT [0-9]
 ID [a-zA-Z_][a-zA-Z0-9_]*
 OP "+"|"-"|"*"|"/"|"<"|">"|"="|"<="|">="|"=="|"%" 
@@ -36,10 +38,11 @@ OP "+"|"-"|"*"|"/"|"<"|">"|"="|"<="|">="|"=="|"%"
 %%
 
 "#" BEGIN(HEADER);
-{str} printf("#%d string: %s\n", lineCount, yytext);
-{char} printf("#%d char: %s\n", lineCount, yytext);
+{STR} printf("#%d string: %s\n", lineCount, yytext);
+{CHAR} printf("#%d char: %s\n", lineCount, yytext);
 if|for|while|else printf("#%d branch: %s\n", lineCount, yytext);
-{DIGIT}+ {printf("#%d value: %s\n", lineCount, yytext);}
+{PLUS_MINUS}?{FLOAT} {printf("#%d value: %s\n", lineCount, yytext);}
+{PLUS_MINUS}?{DIGIT}+ {printf("#%d value: %s\n", lineCount, yytext);}
 "//".+  {printf("#%d one line comment: %s\n", lineCount, yytext);}
 {OP} printf("#%d An operator: %s\n",lineCount, yytext );
 "/*" {
@@ -59,7 +62,7 @@ return {
     BEGIN(FUNC_OR_VAR);
 }
 \n  {lineCount++; } 
-{space} {}
+{SPACE} {}
 
 <HEADER>{
     ">" BEGIN(0);
@@ -87,7 +90,7 @@ return {
         printf("#%d variable ID: %s\n", id_line, id);
         BEGIN(0);
     }
-    "("{space}")" {
+    "("{SPACE}")" {
         printf("%s\n", yytext);
          if (declare_flag){
             printf("(declared)");
