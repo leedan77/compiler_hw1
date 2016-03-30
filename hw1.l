@@ -41,8 +41,8 @@ OP "+"|"-"|"*"|"/"|"<"|">"|"="|"<="|">="|"=="|"%"
 {STR} printf("#%d string: %s\n", lineCount, yytext);
 {CHAR} printf("#%d char: %s\n", lineCount, yytext);
 if|for|while|else printf("#%d branch: %s\n", lineCount, yytext);
-{PLUS_MINUS}?{FLOAT} {printf("#%d value: %s\n", lineCount, yytext);}
-{PLUS_MINUS}?{DIGIT}+ {printf("#%d value: %s\n", lineCount, yytext);}
+{PLUS_MINUS}?{FLOAT} {printf("#%d float: %s\n", lineCount, yytext);}
+{PLUS_MINUS}?{DIGIT}+[^\.] {printf("#%d integer: %s\n", lineCount, yytext);}
 "//".+  {printf("#%d one line comment: %s\n", lineCount, yytext);}
 {OP} printf("#%d An operator: %s\n",lineCount, yytext );
 "/*" {
