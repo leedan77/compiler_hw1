@@ -1,3 +1,15 @@
+/* C subset:
+ * Variable declaration/initialization
+ * Int, double, float, char
+ * Simple statement
+ * for loop, if else, while loop
+ * Comment, Comment block
+ * Operator
+ * Header
+ * Char or String
+ */
+
+
 %{
     #include <stdio.h>
     #include <string.h>
@@ -6,7 +18,6 @@
     char id[256];
     int id_line;
     int declare_flag = 0;
-    FILE *out;
     void print(FILE *fp, int lineNum, char* type){
         fprintf(fp, "#%d %s\n", lineNum, type);
     }
@@ -18,15 +29,8 @@ DIGIT [0-9]
 ID [a-zA-Z_][a-zA-Z0-9_]*
 OP "+"|"-"|"*"|"/"|"<"|">"|"="|"<="|">="|"=="|"%" 
 %x COMMENT
-%x DATATYPE
-%x FLOAT
-%x NAME
-%x DECLARE
-%x INIT
-%x STATEMENT
 %x HEADER
 %x FUNC_OR_VAR
-%s FUNC
 
 
 %%
@@ -42,7 +46,7 @@ if|for|while|else printf("#%d branch: %s\n", lineCount, yytext);
     printf("#%d block comment start\n", lineCount);
     BEGIN(COMMENT);
 }
-"int"|"double"|"char" {
+"int"|"double"|"char"|"float" {
     printf("#%d data type: %s\n", lineCount, yytext);
     declare_flag = 1;
 }
@@ -74,70 +78,6 @@ return {
      \n        lineCount++;
 }
 
-<DECLARE>{
-    {space} {} 
-    {ID} {
-        strcpy(id, yytext);
-        id_line = lineCount;
-        BEGIN(FUNC_OR_VAR);
-       // printf("ID: %s\n", id);
-    }
-    "="{space} {
-        printf("#%d (declare)variable ID: %s\n", id_line, id);
-        ECHO;
-        BEGIN(INIT);
-    }
-    \n   lineCount++;
-    ","  printf("#%d (declare)variable ID: %s\n", id_line, id);
-    ;    {
-        printf("#%d (declare)variable ID: %s\n", id_line, id);
-        BEGIN(INITIAL);
-    }
-    "("{space}")" {
-        printf("#%d (declare)function ID: %s\n", id_line, id);
-        ECHO;
-        BEGIN(0); 
-    }
-    "(" {
-        printf("#%d (declare)function ID: %s\n", id_line, id);
-        ECHO;
-        BEGIN(0); 
-    }
-     
-}
-<INIT>{
-    {ID} {
-        strcpy(id, yytext);
-        id_line = lineCount;
-        BEGIN(FUNC_OR_VAR);
-    }
-    {DIGIT}+ printf("#%d value: %s\n", lineCount ,yytext);
-    {str}   printf("#%d string: %s\n", lineCount ,yytext);  
-    ";" BEGIN(0);
-}
-<STATEMENT>{
-    {space} {}
-    "="{space} {
-
-        BEGIN(INIT);
-    }
-    \n   lineCount++;
-    ","  printf("#%d variable ID: %s\n", id_line, id);
-    ;    {
-        printf("#%d variable ID: %s\n", id_line, id);
-        BEGIN(INITIAL);
-    }
-    "("{space}")" {
-        printf("%s\n", yytext);
-        printf("#%d function ID: %s\n", id_line, id);
-        BEGIN(0); 
-    }
-    "(" {
-        printf("%s\n", yytext);
-        printf("#%d function ID: %s\n", id_line, id);
-        BEGIN(0); 
-    }
-}
 <FUNC_OR_VAR>{
     [^(] {
         if (declare_flag){
@@ -173,10 +113,8 @@ return {
 .   {printf("Unrec: %s\n",yytext);}
 %%
 int main(void) { 
-    out = fopen("token.txt", "w");
     yylex();
     printf("total line: %d\n", lineCount);
-    fclose(out);
     return 0;
 }
 
