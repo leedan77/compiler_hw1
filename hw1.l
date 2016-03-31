@@ -37,12 +37,13 @@ OP "+"|"-"|"*"|"/"|"<"|">"|"="|"<="|">="|"=="|"%"
 
 %%
 
+"{"|"}"|"("|")"|";"|"," printf("#%d %s\n", lineCount, yytext);   
 "#" BEGIN(HEADER);
 {STR} printf("#%d string: %s\n", lineCount, yytext);
 {CHAR} printf("#%d char: %s\n", lineCount, yytext);
 if|for|while|else printf("#%d branch: %s\n", lineCount, yytext);
 {PLUS_MINUS}?{FLOAT} {printf("#%d float: %s\n", lineCount, yytext);}
-{PLUS_MINUS}?{DIGIT}+[^\.] {printf("#%d integer: %s\n", lineCount, yytext);}
+{PLUS_MINUS}?{DIGIT}+ {printf("#%d integer: %s\n", lineCount, yytext);}
 "//".+  {printf("#%d one line comment: %s\n", lineCount, yytext);}
 {OP} printf("#%d An operator: %s\n",lineCount, yytext );
 "/*" {
@@ -91,7 +92,7 @@ return {
         BEGIN(0);
     }
     "("{SPACE}")" {
-        printf("%s\n", yytext);
+        printf("#%d %s\n", lineCount, yytext);
          if (declare_flag){
             printf("(declared)");
             declare_flag = 0;
@@ -101,7 +102,7 @@ return {
         BEGIN(0); 
     }
     "(" {
-        printf("%s\n", yytext);
+        printf("#%d %s\n", lineCount, yytext);
         if (declare_flag){
             printf("(declared)");
             declare_flag = 0;
@@ -112,7 +113,6 @@ return {
     }
         
 }
-"{"|"}"|"("|")"|";"|"," printf("%s\n", yytext);   
 .   {printf("Unrec: %s\n",yytext);}
 %%
 int main(void) { 

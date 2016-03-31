@@ -1,0 +1,6 @@
+#!/usr/bin/fish
+
+flex hw1.l
+gcc lex.yy.c
+
+./a.out < $argv[1]
